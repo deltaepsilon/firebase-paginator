@@ -52,12 +52,93 @@ ref.once('value')
     //   console.log("value\n", paginator.collection);
     // });
 
-    // paginator.on('previous', function () {
-    //   console.log("previous\n", paginator.collection);
-    // });
+    return paginator;
+  })
+  .then(function (paginator) {
+    return testPage(paginator, 10, 91, 100);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 81, 90);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 71, 80);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 61, 70);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 51, 60);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 41, 50);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 31, 40);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 21, 30);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 11, 20);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 1, 10);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 10, 1, 10, 'should fail to back paginate and stick at 1 to 10');
+  })
+  .then(function () {
+    var paginator = new FirebasePaginator(ref, {
+      pageSize: 3
+    });
 
-    // paginator.on('next', function () {
-    //   console.log("previous\n", paginator.collection);
+    // paginator.on('value', function () {
+    //   console.log("value\n", paginator.collection);
+    // });
+    
+    return paginator;
+  })
+  .then(function (paginator) {
+    return testPage(paginator, 3, 98, 100);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 3, 95, 97);
+  })
+  .then(function (paginator) {
+    paginator.previous();
+    return testPage(paginator, 3, 92, 94);
+  })
+  .then(function (paginator) {
+    paginator.next();
+    return testPage(paginator, 3, 95, 97);
+  })
+  .then(function (paginator) {
+    paginator.next();
+    return testPage(paginator, 3, 98, 100);
+  })
+  .then(function (paginator) {
+    paginator.next();
+    return testPage(paginator, 3, 98, 100, 'should fail to forward paginate and stick 98 to 100');
+  })
+  .then(function () {
+    var paginator = new FirebasePaginator(ref, {
+      finite: true,
+      auth: firebaseConfig.secret
+    });
+
+    // paginator.on('value', function() {
+    //   console.log("value\n", paginator.collection);
     // });
 
     return paginator;
@@ -105,53 +186,55 @@ ref.once('value')
     paginator.previous();
     return testPage(paginator, 10, 1, 10, 'should fail to back paginate and stick at 1 to 10');
   })
-  .then(function() {
+  .then(function () {
     var paginator = new FirebasePaginator(ref, {
-      pageSize: 3
+      pageSize: 3,
+      finite: true,
+      auth: firebaseConfig.secret
     });
 
     // paginator.on('value', function () {
     //   console.log("value\n", paginator.collection);
     // });
 
-    // paginator.on('previous', function () {
-    //   console.log("previous\n", paginator.collection);
-    // });
-
-    // paginator.on('next', function () {
-    //   console.log("previous\n", paginator.collection);
-    // });
-
     return paginator;
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     return testPage(paginator, 3, 98, 100);
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     paginator.previous();
     return testPage(paginator, 3, 95, 97);
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     paginator.previous();
     return testPage(paginator, 3, 92, 94);
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     paginator.next();
     return testPage(paginator, 3, 95, 97);
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     paginator.next();
     return testPage(paginator, 3, 98, 100);
   })
-  .then(function(paginator) {
+  .then(function (paginator) {
     paginator.next();
     return testPage(paginator, 3, 98, 100, 'should fail to forward paginate and stick 98 to 100');
   })
+  .then(function (paginator) {
+    paginator.goToPage(paginator.pageCount - 1);
+    return testPage(paginator, 3, 2, 4);
+  })
+  .then(function (paginator) {
+    paginator.goToPage(paginator.pageCount);
+    return testPage(paginator, 1, 1, 1, 'the last page should have only one record');
+  })
   .then(function () {
     console.log('complete');
-    // process.exit();
+    process.exit();
   })
   .catch(function (err) {
     console.log('error', err);
-    // process.exit();
+    process.exit();
   });

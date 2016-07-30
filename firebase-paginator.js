@@ -1,9 +1,11 @@
 var isWindow = !!typeof window === 'object';
 var FirebasePaginator = function (ref, defaults) {
   var paginator = this;
-  var pageSize = defaults && defaults.pageSize ? defaults.pageSize : 10;
-  var isFinite = defaults && defaults.finite ? defaults.finite : false;
-  var isCumulative = !isFinite && defaults && defaults.cumulative ? defaults.cumulative : false;
+  var defaults = defaults || {};
+  var pageSize = defaults.pageSize ? defaults.pageSize : 10;
+  var isFinite = defaults.finite ? defaults.finite : false;
+  var isCumulative = !isFinite && defaults.cumulative ? defaults.cumulative : false;
+  var auth = defaults.auth;
 
   // Events
   var events = {};
@@ -41,17 +43,28 @@ var FirebasePaginator = function (ref, defaults) {
   };
 
   this.once = function (eventName, callback) {
-    var handler = function (payload) {
-      paginator.off(eventName, handler);
-      if (typeof callback === 'function') {
-        callback.call(paginator, payload);
-      }
-    };
-    paginator.on(eventName, handler);
+    return new Promise(function (resolve, reject) {
+      var handler = function (payload) {
+        paginator.off(eventName, handler);
+        if (typeof callback === 'function') {
+          try {
+            resolve(callback.call(paginator, payload));
+          } catch (e) {
+            reject(e);
+          }
+        } else {
+          resolve(payload);
+        }
+      };
+      paginator.on(eventName, handler);
+    });
+
   };
 
-  // Pagination
-  if (!isFinite) {
+  /*
+   *  Pagination can be finite or infinite. Infinite pagination is the default.
+   */
+  if (!isFinite) { // infinite pagination
 
     var setPage = function (cursor, isForward, isLastPage) {
       this.ref = ref.orderByKey();
@@ -86,7 +99,7 @@ var FirebasePaginator = function (ref, defaults) {
             collection[childSnap.key] = childSnap.val();
           });
 
-          
+
           if (keys.length === pageSize + 1) {
             if (isLastPage) {
               delete collection[keys[keys.length - 1]];
@@ -113,7 +126,10 @@ var FirebasePaginator = function (ref, defaults) {
         }.bind(this));
     }.bind(this);
 
-    setPage(); // bootstrap the list
+    setPage()
+      .then(function () {
+        fire('ready', paginator);
+      }); // bootstrap the list
 
     this.reset = function () {
       return setPage()
@@ -140,6 +156,101 @@ var FirebasePaginator = function (ref, defaults) {
         });
     };
 
+
+  } else { // finite pagination
+    var queryPath = ref.toString() + '.json?shallow=true&auth=' + auth;
+    var getKeys = function () {
+      if (isWindow) {
+        console.log('isWindow');
+      } else {
+        var axios = require('axios');
+        return axios.get(queryPath)
+          .then(function (res) {
+            return Object.keys(res.data);
+          });
+      }
+    };
+
+    this.goToPage = function (pageNumber) {
+      paginator.page = this.pages[pageNumber];
+      paginator.pageNumber = pageNumber;
+      paginator.isLastPage = pageNumber === paginator.pages.length;
+      paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
+
+      return this.ref.once('value')
+        .then(function (snap) {
+          var collection = snap.val();
+          var keys = [];
+
+          snap.forEach(function (childSnap) {
+            keys.push(childSnap.key);
+          });
+
+          paginator.snap = snap;
+          paginator.keys = keys;
+          paginator.collection = collection;
+
+          fire('value', snap);
+          if (paginator.isLastPage) {
+            fire('isLastPage');
+          }
+          return paginator;
+        });
+    };
+
+    this.reset = function () {
+      return getKeys()
+        .then(function (keys) {
+          var orderedKeys = keys.sort();
+          var keysLength = orderedKeys.length;
+          var cursors = [];
+
+          for (var i = keysLength; i > 0; i -= pageSize) {
+            cursors.push({
+              fromStart: {
+                startRecord: i - pageSize + 1,
+                endRecord: i
+              },
+              fromEnd: {
+                startRecord: keysLength - i + 1,
+                endRecord: keysLength - i + pageSize 
+              },
+              endKey: keys[i - 1]
+            });
+          }
+
+          var cursorsLength = cursors.length
+          var k = cursorsLength;
+          var pages = {};
+          while (k--) {
+            cursors[k].pageNumber = k + 1;
+            pages[k + 1] = cursors[k];
+          }
+          paginator.pageCount = cursorsLength;
+          paginator.pages = pages;
+
+          return pages;
+        })
+        .catch(function (err) {
+          console.log('finite reset pagination error', err);
+        });
+    };
+
+    this.reset() // Refresh keys and go to first page.
+      .then(function () {
+        return paginator.goToPage(1);
+      })
+      .then(function () {
+        fire('ready', paginator);
+      });
+
+    this.previous = function () {
+      this.goToPage(Math.min(this.pageCount, this.pageNumber + 1));
+    };
+
+    this.next = function () {
+      this.goToPage(Math.max(1, this.pageNumber - 1));
+    };
 
   }
 };
