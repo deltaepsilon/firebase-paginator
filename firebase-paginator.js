@@ -1,15 +1,21 @@
-var isWindow = !!typeof window === 'object';
+var isWindow = typeof window === 'object';
 var FirebasePaginator = function (ref, defaults) {
   var paginator = this;
   var defaults = defaults || {};
   var pageSize = defaults.pageSize ? defaults.pageSize : 10;
   var isFinite = defaults.finite ? defaults.finite : false;
-  var isCumulative = !isFinite && defaults.cumulative ? defaults.cumulative : false;
   var auth = defaults.auth;
 
   // Events
+  this.listen = function(callback) {
+    paginator.allEventHandler = callback;
+  };
   var events = {};
   var fire = function (eventName, payload) {
+    if (typeof paginator.allEventHandler === 'function') {
+      paginator.allEventHandler.call(paginator, eventName, payload);
+    }
+
     if (events[eventName] && events[eventName].queue) {
       var queue = events[eventName].queue.reverse();
       var i = queue.length;
@@ -114,7 +120,7 @@ var FirebasePaginator = function (ref, defaults) {
 
           this.snap = snap;
           this.keys = keys;
-          this.isLastPage = isLastPage;
+          this.isLastPage = isLastPage || false;
           this.collection = collection;
           this.cursor = cursor;
 
@@ -158,10 +164,27 @@ var FirebasePaginator = function (ref, defaults) {
 
 
   } else { // finite pagination
-    var queryPath = ref.toString() + '.json?shallow=true&auth=' + auth;
+    var queryPath = ref.toString() + '.json?shallow=true';
+    if (auth) {
+      queryPath += '&auth=' + auth;
+    }
     var getKeys = function () {
       if (isWindow) {
-        console.log('isWindow');
+        return new Promise(function(resolve, reject) {
+          var request = new XMLHttpRequest();
+          request.onreadystatechange = function() {
+            if (request.readyState === 4) {
+              var response = JSON.parse(request.responseText);
+              if (request.status === 200) {
+                resolve(Object.keys(response)); 
+              } else {
+                reject(response);
+              }
+            }
+          };
+          request.open('GET', queryPath, true);
+          request.send();
+        });
       } else {
         var axios = require('axios');
         return axios.get(queryPath)
