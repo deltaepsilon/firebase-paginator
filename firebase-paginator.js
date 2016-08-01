@@ -2,7 +2,7 @@ var isWindow = typeof window === 'object';
 var FirebasePaginator = function (ref, defaults) {
   var paginator = this;
   var defaults = defaults || {};
-  var pageSize = defaults.pageSize ? defaults.pageSize : 10;
+  var pageSize = defaults.pageSize ? parseInt(defaults.pageSize, 10) : 10;
   var isFinite = defaults.finite ? defaults.finite : false;
   var auth = defaults.auth;
 
@@ -195,9 +195,10 @@ var FirebasePaginator = function (ref, defaults) {
     };
 
     this.goToPage = function (pageNumber) {
+      pageNumber = Math.min(this.pageCount, Math.max(1, parseInt(pageNumber)));
       paginator.page = this.pages[pageNumber];
       paginator.pageNumber = pageNumber;
-      paginator.isLastPage = pageNumber === paginator.pages.length;
+      paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
       paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
 
       return this.ref.once('value')
@@ -268,11 +269,11 @@ var FirebasePaginator = function (ref, defaults) {
       });
 
     this.previous = function () {
-      this.goToPage(Math.min(this.pageCount, this.pageNumber + 1));
+      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1));
     };
 
     this.next = function () {
-      this.goToPage(Math.max(1, this.pageNumber - 1));
+      return this.goToPage(Math.max(1, this.pageNumber - 1));
     };
 
   }

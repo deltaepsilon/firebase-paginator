@@ -1,0 +1,194 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>firebase-paginator Demo</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../firebase/firebase.js"></script>
+  <link rel="import" href="../firebase-paginator.html">
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../paper-material/paper-material.html">
+  <link rel="import" href="../../paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../../paper-item/paper-item-body.html">
+  <link rel="import" href="../../paper-styles/typography.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+  <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+
+  <script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyBP5EaFCQ0yAbcvYozyKCwKJ2Wf-yioCs4",
+    authDomain: "quiver-two.firebaseapp.com",
+    databaseURL: "https://quiver-two.firebaseio.com",
+    storageBucket: "quiver-two.appspot.com",
+  };
+  firebase.initializeApp(config);
+</script>
+
+</head>
+
+<body unresolved>
+  <template is="dom-bind" id="app">
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
+      .headline {
+        @apply(--paper-font-headline);
+      }
+      
+      .title {
+        @apply(--paper-font-title);
+      }
+      
+      .subhead {
+        @apply(--paper-font-subhead);
+      }
+      
+      .border-bottom {
+        border-bottom: 1px solid var(--light-theme-divider-color);
+      }
+      
+      #page-number-input {
+        @apply(--paper-font-subhead);
+        border: none;
+        background: none;
+        color: var(--paper-toolbar-color, --dark-theme-text-color);
+        text-align: right;
+        outline: none;
+      }
+    </style>
+    <firebase-paginator id="paginator" ref="[[ref]]" options="[[options]]" collection="{{collection}}" is-last-page="{{isLastPage}}"
+      page-number="{{pageNumber}}" page-count="{{pageCount}}" on-page-number-changed="handlePageNumberChange"></firebase-paginator>
+    <paper-material elevation="1">
+      <paper-toolbar class="medium-tall">
+        <h3 class="headline">Paginating some Firebase!</h3>
+        <div class="middle layout horizontal end-justified flex">
+          <div class="layout vertical center-justified">
+            <div class="layout horizontal center">
+              <template is="dom-if" if="[[pageCount]]">
+                <input id="page-number-input" is="iron-input" type="number" value="{{pageNumber::input}}" on-change="goToPage" min="1" max$="[[pageCount]]">
+                <span class="subhead">/{{pageCount}}</span>
+              </template>
+              <paper-icon-button icon="arrow-back" on-click="previous" disabled$="[[isLastPage]]"></paper-icon-button>
+              <paper-icon-button icon="arrow-forward" on-click="next" disabled$="[[isFirstPage]]"></paper-icon-button>
+              <paper-icon-button icon="refresh" on-click="reset"></paper-icon-button>
+            </div>
+          </div>
+        </div>
+      </paper-toolbar>
+      <div style="padding: 1px;">
+        <div class="layout horizontal justified wrap border-bottom" style="padding: 1rem;">
+          <paper-item style="max-width: 100%;">
+            <paper-item-body two-line>
+              <div>
+                100 Items
+              </div>
+              <div secondary>
+                <a href$="[[refJSON]]" target="_blank">[[refJSON]]</a>
+              </div>
+            </paper-item-body>
+          </paper-item>
+          <div class="layout horizontal center">
+            <paper-input label="Page Size" value="{{options.pageSize::input}}" type="number" min="3" max="25" style="width: 5rem; padding-right: 1rem;"></paper-input>
+            <paper-toggle-button id="finiteToggle" active="{{options.finite}}" on-change="reset">Finite Pagination</paper-toggle-button>
+          </div>
+
+        </div>
+
+        <template is="dom-repeat" items="[[listItems]]">
+          <paper-item>
+            <paper-item-body two-line>
+              <div>
+                {{item.index}}
+              </div>
+              <div secondary>
+                {{item.key}}
+              </div>
+            </paper-item-body>
+          </paper-item>
+        </template>
+      </div>
+
+    </paper-material>
+  </template>
+
+
+
+  <script>
+      var app = document.querySelector('#app');
+
+      app.ref = firebase.database().ref('firebasePaginator/collection');
+      app.refJSON = app.ref.toString() + ".json";
+
+      app.options = {
+        finite: true,
+        pageSize: 3
+      };
+
+      app.previous = function() {
+        return app.$.paginator.previous();
+      };
+
+      app.next = function() {
+        return app.$.paginator.next();
+      };
+
+      app.reset = function() {
+        var paginator = app.$.paginator;
+        return paginator.reset()
+          .then(function() {
+            return paginator.goToPage(1);
+          });
+      };
+
+      app.goToPage = function(e) {
+        var value = e.target.value;
+        if (value > 0 && value <= app.pageCount) {
+          return app.$.paginator.goToPage(e.target.value);
+        } else {
+          return false;
+        }
+      };
+
+      app.handlePageNumberChange = function(e) {
+        app.isFirstPage = e.detail.value === 1;
+      };
+      
+      setTimeout(function() {
+        app.$.paginator.addEventListener('collection-changed', function(e) {
+          var collection = e.detail.value;
+          var keys = Object.keys(collection);
+          var i = keys.length;
+          var listItems = [];
+
+          while (i--) {
+            listItems.push({
+              key: keys[i],
+              index: collection[keys[i]]
+            });
+          }
+          app.listItems = listItems;
+        });
+
+        app.$.finiteToggle.checked = app.options.finite;
+      });
+      
+  </script>
+
+</body>
+
+</html>
