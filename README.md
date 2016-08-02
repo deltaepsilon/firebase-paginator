@@ -40,7 +40,7 @@ var options = {
   finite: true,
   auth: 'MyAuthTokenForSecurityPurposes'
 };
-var paginator = new FirebasePaginator(ref);
+var paginator = new FirebasePaginator(ref, options);
 
 ```
 # Functions
