@@ -7,7 +7,7 @@ var FirebasePaginator = function (ref, defaults) {
   var auth = defaults.auth;
 
   // Events
-  this.listen = function(callback) {
+  this.listen = function (callback) {
     paginator.allEventHandler = callback;
   };
   var events = {};
@@ -170,13 +170,13 @@ var FirebasePaginator = function (ref, defaults) {
     }
     var getKeys = function () {
       if (isWindow) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           var request = new XMLHttpRequest();
-          request.onreadystatechange = function() {
+          request.onreadystatechange = function () {
             if (request.readyState === 4) {
               var response = JSON.parse(request.responseText);
               if (request.status === 200) {
-                resolve(Object.keys(response)); 
+                resolve(Object.keys(response));
               } else {
                 reject(response);
               }
@@ -237,7 +237,7 @@ var FirebasePaginator = function (ref, defaults) {
               },
               fromEnd: {
                 startRecord: keysLength - i + 1,
-                endRecord: keysLength - i + pageSize 
+                endRecord: keysLength - i + pageSize
               },
               endKey: keys[i - 1]
             });
@@ -269,11 +269,17 @@ var FirebasePaginator = function (ref, defaults) {
       });
 
     this.previous = function () {
-      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1));
+      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1))
+        .then(function() {
+          return fire('previous');
+        });
     };
 
     this.next = function () {
-      return this.goToPage(Math.max(1, this.pageNumber - 1));
+      return this.goToPage(Math.max(1, this.pageNumber - 1))
+        .then(function () {
+          return fire('next');
+        });
     };
 
   }
