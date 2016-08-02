@@ -1,0 +1,35 @@
+{
+  "name": "firebase",
+  "version": "3.2.1",
+  "homepage": "https://firebase.google.com",
+  "authors": [
+    "Firebase <firebase-support@google.com>"
+  ],
+  "description": "Firebase Web Client",
+  "main": "firebase.js",
+  "keywords": [
+    "Firebase",
+    "realtime",
+    "database",
+    "storage",
+    "authentication"
+  ],
+  "license": "https://developers.google.com/terms",
+  "private": false,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "3.2.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.2.1",
+    "commit": "6b2465235ceb33fa32eacba21a30a88ab19bb0ab"
+  },
+  "_source": "https://github.com/firebase/firebase-bower.git",
+  "_target": "^3.2.1",
+  "_originalSource": "firebase"
+}

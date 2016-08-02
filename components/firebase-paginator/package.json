@@ -1,0 +1,30 @@
+{
+  "name": "firebase-paginator",
+  "version": "1.0.0",
+  "description": "Pagination for Firebase",
+  "main": "firebase-paginator.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deltaepsilon/firebase-paginator.git"
+  },
+  "keywords": [
+    "firebase",
+    "pagination"
+  ],
+  "author": "Chris Esplin <chris@quiver.is>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deltaepsilon/firebase-paginator/issues"
+  },
+  "homepage": "https://github.com/deltaepsilon/firebase-paginator",
+  "dependencies": {
+    "axios": "^0.13.1",
+    "firebase": "^3.2.1"
+  },
+  "devDependencies": {
+    "tape": "^4.6.0"
+  }
+}

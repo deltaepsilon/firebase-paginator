@@ -1,0 +1,41 @@
+{
+  "name": "firebase-paginator",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "seed"
+  ],
+  "main": "firebase-paginator.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.6",
+    "paper-item": "PolymerElements/paper-item#^1.2.1",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.2",
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.1.2",
+    "paper-input": "PolymerElements/paper-input#^1.1.16"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "firebase": "^3.2.1"
+  },
+  "_release": "3590f419f0",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "3590f419f01c73b472e7467be9ebad85c02db32b"
+  },
+  "_source": "git@github.com:deltaepsilon/firebase-paginator.git",
+  "_target": "master",
+  "_originalSource": "git@github.com:deltaepsilon/firebase-paginator",
+  "_direct": true
+}

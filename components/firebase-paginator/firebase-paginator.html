@@ -1,0 +1,185 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<script src="firebase-paginator.js"></script>
+
+<!--
+Firebase 3.0 pagination manager
+
+Example:
+
+    <firebase-paginator 
+      id="paginator" 
+      ref="[[ref]]" 
+      options="[[options]]" 
+      collection="{{collection}}" 
+      is-last-page="{{isLastPage}}"
+      page-number="{{pageNumber}}" 
+      page-count="{{pageCount}}" 
+      on-page-number-changed="handlePageNumberChange"
+    ></firebase-paginator>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="firebase-paginator">
+  <script>
+    Polymer({
+      is: 'firebase-paginator',
+
+      properties: {
+        /**
+         * `ref` is the Firebase reference for the collection to paginate
+         */
+        ref: Object,
+
+        /**
+         * `auth` is an optional auth token required for paginating secured collections in a finite manner
+         * 
+         * @type {{pageSize: number, finite: boolean, auth: string}}
+         * @default {{pageSize: 10, finite: false, auth: undefined}}
+         */
+        options: {
+          type: Object,
+          value: {}
+        },
+
+        paginator: {
+          type: Object,
+          computed: 'getPaginator(ref, options.*)'
+        },
+
+        /**
+         * An object representing the current page of the collection
+         */
+        collection: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+
+        isLastPage: {
+          type: Boolean,
+          notify: true
+        },
+        pageNumber: {
+          type: Number,
+          notify: true
+        },
+        pageCount: {
+          type: Number,
+          notify: true
+        },
+        
+      },
+
+      attached: function() {
+
+      },
+
+      // Element Behavior
+
+      /**
+       * The Firebase ref for the collection to paginate
+       *
+       * @return {object} Firebase ref.
+       */
+      getPaginator: function(ref, optionsObj) {
+        if (ref) {
+          var paginator = new FirebasePaginator(ref, optionsObj.base);
+          this._initPaginator(paginator);
+          return paginator;
+        }
+      },
+
+      _initPaginator: function(paginator) {
+        paginator.listen(function(name, payload) {
+          if (name === 'value') {
+            this.set('collection', paginator.collection);
+            this.set('isLastPage', paginator.isLastPage);
+            this.set('pageNumber', paginator.pageNumber);
+            this.set('pageCount', paginator.pageCount);
+          }
+          this.fire(name, payload);
+        }.bind(this));
+      },
+
+      /**
+       * Proxies FirebasePaginator.reset
+       */
+      reset: function() {
+        return this.paginator.reset();
+      },
+
+      /**
+       * Proxies FirebasePaginator.previous
+       */
+      previous: function() {
+        return this.paginator.previous();
+      },
+
+      /**
+       * Proxies FirebasePaginator.next
+       */
+      next: function() {
+        return this.paginator.next();
+      },
+
+      /**
+       * Proxies FirebasePaginator.goToPage
+       */
+      goToPage: function(i) {
+        if (typeof this.paginator.goToPage === 'function') {
+          return this.paginator.goToPage(i);
+        }
+      },
+
+    });
+    /**
+       * The `value` event bubbles up from FirebasePaginator.
+       *
+       * @event value
+       * @detail {snapshot}
+       */
+
+      /**
+       * The `ready` event bubbles up from FirebasePaginator.
+       *
+       * @event ready
+       * @detail {FirebasePaginator}
+       */
+
+      /**
+       * The `reset` event bubbles up from FirebasePaginator.
+       *
+       * @event reset
+       */
+
+      /**
+       * The `previous` event bubbles up from FirebasePaginator.
+       *
+       * @event previous
+       */
+
+      /**
+       * The `next` event bubbles up from FirebasePaginator.
+       *
+       * @event next
+       */
+
+      /**
+       * The `isLastPage` event bubbles up from FirebasePaginator.
+       *
+       * @event isLastPage
+       */
+  </script>
+</dom-module>
