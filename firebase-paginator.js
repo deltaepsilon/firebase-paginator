@@ -91,7 +91,6 @@ var FirebasePaginator = function (ref, defaults) {
 
       return this.ref.once('value')
         .then(function (snap) {
-          var numChildren = snap.numChildren();
           var keys = [];
           var collection = {};
 
