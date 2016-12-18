@@ -69,7 +69,7 @@ Attaches a callback to an event
 var paginator = new FirebasePaginator(ref);
 var itemsList = [];
 var handler = function() {
-  collection = paginator.collection();
+  collection = paginator.collection;
 };
 
 paginator.on('value', handler);
@@ -83,7 +83,7 @@ Detaches a callback from an event
 var paginator = new FirebasePaginator(ref);
 var itemsList = [];
 var handler = function() {
-  collection = paginator.collection();
+  collection = paginator.collection;
 };
 
 paginator.off('value', handler);
@@ -97,7 +97,7 @@ Calls a callback exactly once for an event
 var paginator = new FirebasePaginator(ref);
 var itemsList = [];
 var handler = function() {
-  collection = paginator.collection();
+  collection = paginator.collection;
 };
 
 // Callback pattern
