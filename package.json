@@ -1,6 +1,6 @@
 {
   "name": "firebase-paginator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pagination for Firebase",
   "main": "firebase-paginator.js",
   "scripts": {
