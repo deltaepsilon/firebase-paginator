@@ -1,5 +1,6 @@
 var isWindow = typeof window === 'object';
-var FirebasePaginator = function (ref, defaults) {
+
+function FirebasePaginator(ref, defaults) {
   var paginator = this;
   var defaults = defaults || {};
   var pageSize = defaults.pageSize ? parseInt(defaults.pageSize, 10) : 10;
@@ -112,10 +113,12 @@ var FirebasePaginator = function (ref, defaults) {
             } else {
               delete collection[keys[0]];
             }
+          } else if (isLastPage && keys.length < pageSize + 1) {
+            console.log('tiny page', keys.length, pageSize);
           } else if (isForward) {
             return setPage(); // force a reset if forward pagination overruns the last result
-          } else {
-            return setPage(undefined, true, true);
+          } else { 
+            return setPage(undefined, true, true); // Handle overruns
           }
 
           this.snap = snap;
@@ -189,17 +192,21 @@ var FirebasePaginator = function (ref, defaults) {
         var axios = require('axios');
         return axios.get(queryPath)
           .then(function (res) {
-            return Object.keys(res.data);
+            return Object.keys(res.data || {});
           });
       }
     };
 
     this.goToPage = function (pageNumber) {
       pageNumber = Math.min(this.pageCount, Math.max(1, parseInt(pageNumber)));
-      paginator.page = this.pages[pageNumber];
-      paginator.pageNumber = pageNumber;
-      paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
-      paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
+      if (Object.keys(this.pages).length) { // Null check for empty collections
+        paginator.page = this.pages[pageNumber];
+        paginator.pageNumber = pageNumber;
+        paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
+        paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
+      } else {
+        paginator.ref = ref.orderByKey().limitToLast(pageSize);
+      }
 
       return this.ref.once('value')
         .then(function (snap) {
@@ -212,7 +219,7 @@ var FirebasePaginator = function (ref, defaults) {
 
           paginator.snap = snap;
           paginator.keys = keys;
-          paginator.collection = collection;
+          paginator.collection = collection || {};
 
           fire('value', snap);
           if (paginator.isLastPage) {

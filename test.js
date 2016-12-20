@@ -1,26 +1,31 @@
 var test = require('tape');
 var firebase = require('firebase');
 var path = 'firebasePaginator/collection';
+var smallCollectionPath = 'firebasePaginator/small-collection';
+var emptyCollectionPath = 'firebasePaginator/empty-collection';
 var firebaseConfig = require('./env.json').firebaseConfig;
 
 firebase.initializeApp(firebaseConfig);
 
 var FirebasePaginator = require('./firebase-paginator');
 var ref = firebase.database().ref(path);
-var populateCollection = function () {
+var smallCollectionRef = firebase.database().ref(smallCollectionPath);
+var emptyCollectionRef = firebase.database().ref(emptyCollectionPath);
+
+function populateCollection(count, ref) {
   return new Promise(function (resolve, reject) {
     var promises = [];
-    var i = 100;
+    var i = count;
 
     while (i--) {
-      promises.push(ref.push(100 - i));
+      promises.push(ref.push(count - i));
     }
 
     Promise.all(promises).then(resolve, reject);
   });
 };
 
-var testPage = function (paginator, length, start, end, testName) {
+function testPage(paginator, length, start, end, testName) {
   return new Promise(function (resolve, reject) {
     test(testName || `should return records ${start} to ${end}`, function (t) {
       paginator.once('value', function (snap) {
@@ -37,14 +42,63 @@ var testPage = function (paginator, length, start, end, testName) {
   });
 };
 
-ref.once('value')
+return ref.once('value')
   .then(function (snap) {
     if (snap.numChildren() === 100) {
       return true;
     } else {
-      return populateCollection();
+      return populateCollection(100, ref);
     }
   })
+  .then(function() {
+    return smallCollectionRef.once('value');    
+  })
+  .then(function(snap) {
+    if (snap.numChildren() == 3) {
+      return true;
+    } else {
+      return populateCollection(3, smallCollectionRef);
+    }
+  })
+  .then(function() {
+    return emptyCollectionRef.remove();
+  })
+  .then(function() { // Test empty collection inifite pagination
+    return new FirebasePaginator(emptyCollectionRef);
+  })
+  .then(function(paginator) {
+    return testPage(paginator, 0, undefined, undefined);
+  })
+  .then(function() { // Test empty collection finite pagination
+    return new FirebasePaginator(emptyCollectionRef, {
+      finite: true,
+      auth: firebaseConfig.secret
+    });
+  })
+  .then(function(paginator) {
+    return testPage(paginator, 0, undefined, undefined);
+  })
+  .then(function() { // Test small collection infinite pagination
+    return new FirebasePaginator(smallCollectionRef);
+  })
+  .then(function(paginator) {
+    return testPage(paginator, 3, 1, 3);
+  })
+  .then(function() {
+    return new FirebasePaginator(smallCollectionRef, {pageSize: 3});
+  })
+  .then(function(paginator) {
+    return testPage(paginator, 3, 1, 3);
+  })
+  .then(function() { // Test small collection finite pagination
+    return new FirebasePaginator(smallCollectionRef, {
+      finite: true,
+      auth: firebaseConfig.secret
+    });
+  })
+  .then(function(paginator) {
+    return testPage(paginator, 3, 1, 3);
+  })  
   .then(function () {
     var paginator = new FirebasePaginator(ref);
 
