@@ -1,0 +1,7 @@
+*.md
+bower.json
+demo/
+*.dist
+*.svg
+index.html
+test.js
