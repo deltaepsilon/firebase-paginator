@@ -1,6 +1,6 @@
 {
   "name": "firebase-paginator",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "authors": [
     "Anonymous <anonymous@example.com>"
   ],
@@ -20,7 +20,10 @@
     "/bower_components/",
     "hero.svg",
     "package.json",
-    "test.js"
+    "test.js",
+    "*.md",
+    "*.dist",
+    "index.html"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.2.0",
