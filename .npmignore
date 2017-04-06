@@ -5,3 +5,8 @@ demo/
 *.svg
 index.html
 test.js
+.*
+env.json
+service-account.json
+bower_components
+
