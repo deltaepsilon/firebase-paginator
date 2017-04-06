@@ -1,6 +1,6 @@
 {
   "name": "firebase-paginator",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "authors": [
     "Anonymous <anonymous@example.com>"
   ],
@@ -15,7 +15,12 @@
   "homepage": "https://github.com/<USERNAME>/seed-element/",
   "ignore": [
     "/.*",
-    "/test/"
+    "/test/",
+    "/demo/",
+    "/bower_components/",
+    "hero.svg",
+    "package.json",
+    "test.js"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.2.0",
