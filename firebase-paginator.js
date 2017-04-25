@@ -1,4 +1,4 @@
-var isWindow = typeof window === 'object';
+var isWindow = typeof process != 'object';
 
 function FirebasePaginator(ref, defaults) {
   var paginator = this;
@@ -7,12 +7,14 @@ function FirebasePaginator(ref, defaults) {
   var isFinite = defaults.finite ? defaults.finite : false;
   var auth = defaults.auth;
 
+  this.ref = ref;
+
   // Events
-  this.listen = function (callback) {
+  this.listen = function(callback) {
     paginator.allEventHandler = callback;
   };
   var events = {};
-  var fire = function (eventName, payload) {
+  var fire = function(eventName, payload) {
     if (typeof paginator.allEventHandler === 'function') {
       paginator.allEventHandler.call(paginator, eventName, payload);
     }
@@ -28,7 +30,7 @@ function FirebasePaginator(ref, defaults) {
     }
   };
 
-  this.on = function (eventName, callback) {
+  this.on = function(eventName, callback) {
     if (!events[eventName]) {
       events[eventName] = {
         queue: []
@@ -37,7 +39,7 @@ function FirebasePaginator(ref, defaults) {
     events[eventName].queue.push(callback);
   };
 
-  this.off = function (eventName, callback) {
+  this.off = function(eventName, callback) {
     if (events[eventName] && events[eventName].queue) {
       var queue = events[eventName].queue;
       var i = queue.length;
@@ -49,9 +51,9 @@ function FirebasePaginator(ref, defaults) {
     }
   };
 
-  this.once = function (eventName, callback) {
-    return new Promise(function (resolve, reject) {
-      var handler = function (payload) {
+  this.once = function(eventName, callback) {
+    return new Promise(function(resolve, reject) {
+      var handler = function(payload) {
         paginator.off(eventName, handler);
         if (typeof callback === 'function') {
           try {
@@ -65,46 +67,49 @@ function FirebasePaginator(ref, defaults) {
       };
       paginator.on(eventName, handler);
     });
-
   };
 
   /*
    *  Pagination can be finite or infinite. Infinite pagination is the default.
    */
-  if (!isFinite) { // infinite pagination
+  if (!isFinite) {
+    // infinite pagination
 
-    var setPage = function (cursor, isForward, isLastPage) {
+    var setPage = function(cursor, isForward, isLastPage) {
       this.ref = ref.orderByKey();
 
       // If there it's forward pagination, use limitToFirst(pageSize + 1) and startAt(theLastKey)
 
-      if (isForward) { // forward pagination
+      if (isForward) {
+        // forward pagination
         this.ref = this.ref.limitToFirst(pageSize + 1);
-        if (cursor) { // check for forward cursor
+        if (cursor) {
+          // check for forward cursor
           this.ref = this.ref.startAt(cursor);
         }
-      } else { // previous pagination
+      } else {
+        // previous pagination
         this.ref = this.ref.limitToLast(pageSize + 1);
-        if (cursor) { // check for previous cursor
+        if (cursor) {
+          // check for previous cursor
           this.ref = this.ref.endAt(cursor);
         }
       }
 
-      return this.ref.once('value')
-        .then(function (snap) {
+      return this.ref.once('value').then(
+        function(snap) {
           var keys = [];
           var collection = {};
 
           cursor = undefined;
 
-          snap.forEach(function (childSnap) {
+          snap.forEach(function(childSnap) {
             keys.push(childSnap.key);
             if (!cursor) {
               cursor = childSnap.key;
             }
             collection[childSnap.key] = childSnap.val();
           });
-
 
           if (keys.length === pageSize + 1) {
             if (isLastPage) {
@@ -116,7 +121,7 @@ function FirebasePaginator(ref, defaults) {
             console.log('tiny page', keys.length, pageSize);
           } else if (isForward) {
             return setPage(); // force a reset if forward pagination overruns the last result
-          } else { 
+          } else {
             return setPage(undefined, true, true); // Handle overruns
           }
 
@@ -131,50 +136,48 @@ function FirebasePaginator(ref, defaults) {
             fire('isLastPage');
           }
           return this;
-        }.bind(this));
+        }.bind(this)
+      );
     }.bind(this);
 
-    setPage()
-      .then(function () {
-        fire('ready', paginator);
-      }); // bootstrap the list
+    setPage().then(function() {
+      fire('ready', paginator);
+    }); // bootstrap the list
 
-    this.reset = function () {
-      return setPage()
-        .then(function () {
-          return fire('reset');
-        });
+    this.reset = function() {
+      return setPage().then(function() {
+        return fire('reset');
+      });
     };
 
-    this.previous = function () {
-      return setPage(this.cursor)
-        .then(function () {
+    this.previous = function() {
+      return setPage(this.cursor).then(
+        function() {
           return fire('previous');
-        }.bind(this));
+        }.bind(this)
+      );
     };
 
-    this.next = function () {
+    this.next = function() {
       var cursor;
       if (this.keys && this.keys.length) {
         cursor = this.keys[this.keys.length - 1];
       }
-      return setPage(cursor, true)
-        .then(function () {
-          return fire('next');
-        });
+      return setPage(cursor, true).then(function() {
+        return fire('next');
+      });
     };
-
-
-  } else { // finite pagination
+  } else {
+    // finite pagination
     var queryPath = ref.toString() + '.json?shallow=true';
     if (auth) {
       queryPath += '&auth=' + auth;
     }
-    var getKeys = function () {
+    var getKeys = function() {
       if (isWindow) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
           var request = new XMLHttpRequest();
-          request.onreadystatechange = function () {
+          request.onreadystatechange = function() {
             if (request.readyState === 4) {
               var response = JSON.parse(request.responseText);
               if (request.status === 200) {
@@ -189,48 +192,51 @@ function FirebasePaginator(ref, defaults) {
         });
       } else {
         var axios = require('axios');
-        return axios.get(queryPath)
-          .then(function (res) {
-            return Object.keys(res.data || {});
-          });
+        return axios.get(queryPath).then(function(res) {
+          return Object.keys(res.data || {});
+        });
       }
     };
 
-    this.goToPage = function (pageNumber) {
+    this.goToPage = function(pageNumber) {
       pageNumber = Math.min(this.pageCount, Math.max(1, parseInt(pageNumber)));
-      if (Object.keys(this.pages).length) { // Null check for empty collections
+      if (Object.keys(this.pages).length) {
+        // Null check for empty collections
         paginator.page = this.pages[pageNumber];
         paginator.pageNumber = pageNumber;
-        paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
-        paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
+        paginator.isLastPage =
+          pageNumber === Object.keys(paginator.pages).length;
+        paginator.ref = ref
+          .orderByKey()
+          .limitToLast(pageSize)
+          .endAt(paginator.page.endKey);
       } else {
         paginator.ref = ref.orderByKey().limitToLast(pageSize);
       }
 
-      return this.ref.once('value')
-        .then(function (snap) {
-          var collection = snap.val();
-          var keys = [];
+      return this.ref.once('value').then(function(snap) {
+        var collection = snap.val();
+        var keys = [];
 
-          snap.forEach(function (childSnap) {
-            keys.push(childSnap.key);
-          });
-
-          paginator.snap = snap;
-          paginator.keys = keys;
-          paginator.collection = collection || {};
-
-          fire('value', snap);
-          if (paginator.isLastPage) {
-            fire('isLastPage');
-          }
-          return paginator;
+        snap.forEach(function(childSnap) {
+          keys.push(childSnap.key);
         });
+
+        paginator.snap = snap;
+        paginator.keys = keys;
+        paginator.collection = collection || {};
+
+        fire('value', snap);
+        if (paginator.isLastPage) {
+          fire('isLastPage');
+        }
+        return paginator;
+      });
     };
 
-    this.reset = function () {
+    this.reset = function() {
       return getKeys()
-        .then(function (keys) {
+        .then(function(keys) {
           var orderedKeys = keys.sort();
           var keysLength = orderedKeys.length;
           var cursors = [];
@@ -249,7 +255,7 @@ function FirebasePaginator(ref, defaults) {
             });
           }
 
-          var cursorsLength = cursors.length
+          var cursorsLength = cursors.length;
           var k = cursorsLength;
           var pages = {};
           while (k--) {
@@ -261,38 +267,37 @@ function FirebasePaginator(ref, defaults) {
 
           return pages;
         })
-        .catch(function (err) {
+        .catch(function(err) {
           console.log('finite reset pagination error', err);
         });
     };
 
     this.reset() // Refresh keys and go to first page.
-      .then(function () {
+      .then(function() {
         return paginator.goToPage(1);
       })
-      .then(function () {
+      .then(function() {
         fire('ready', paginator);
       });
 
-    this.previous = function () {
-      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1))
-        .then(function() {
-          return fire('previous');
-        });
+    this.previous = function() {
+      return this.goToPage(
+        Math.min(this.pageCount, this.pageNumber + 1)
+      ).then(function() {
+        return fire('previous');
+      });
     };
 
-    this.next = function () {
-      return this.goToPage(Math.max(1, this.pageNumber - 1))
-        .then(function () {
-          return fire('next');
-        });
+    this.next = function() {
+      return this.goToPage(Math.max(1, this.pageNumber - 1)).then(function() {
+        return fire('next');
+      });
     };
-
   }
-};
+}
 
-if (typeof window === 'object') {
-  window.FirebasePaginator = FirebasePaginator;
-} else if (typeof process === 'object') {
+if (typeof process === 'object') {
   module.exports = FirebasePaginator;
+} else if (typeof window === 'object') {
+  window.FirebasePaginator = FirebasePaginator;
 }

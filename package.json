@@ -4,7 +4,9 @@
   "description": "Pagination for Firebase",
   "main": "firebase-paginator.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "jest": "jest",
+    "jest:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -21,10 +23,13 @@
   },
   "homepage": "https://github.com/deltaepsilon/firebase-paginator",
   "dependencies": {
-    "axios": "^0.13.1"
+    "axios": "^0.13.1",
+    "firebase-admin": "^4.2.1"
   },
   "devDependencies": {
-    "tape": "^4.6.0",
-    "firebase": "^3.2.1"
+    "firebase": "^3.2.1",
+    "jest": "^19.0.2",
+    "jest-cli": "^19.0.2",
+    "tape": "^4.6.0"
   }
 }
