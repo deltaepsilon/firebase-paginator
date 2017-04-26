@@ -1,4 +1,4 @@
-var isWindow = typeof global != 'object' || typeof global.process != 'object';
+var isBrowser = typeof global != 'object' || typeof global.process != 'object';
 
 function FirebasePaginator(ref, defaults) {
   var paginator = this;
@@ -174,7 +174,7 @@ function FirebasePaginator(ref, defaults) {
       queryPath += '&auth=' + auth;
     }
     var getKeys = function() {
-      if (isWindow) {
+      if (isBrowser) {
         return new Promise(function(resolve, reject) {
           var request = new XMLHttpRequest();
           request.onreadystatechange = function() {
@@ -290,7 +290,7 @@ function FirebasePaginator(ref, defaults) {
   }
 }
 
-if (isWindow) {
+if (isBrowserde) {
   window.FirebasePaginator = FirebasePaginator;
 } else {
   module.exports = FirebasePaginator;
