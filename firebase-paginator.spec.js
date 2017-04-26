@@ -64,22 +64,28 @@ describe('Firebase Paginator', () => {
   });
 
   let paginator;
-  function testPage(length, start, end, testName, cbName) {
+  function testPage(length, start, end, testName, precursorName) {
     it(testName || `should return records ${start} to ${end}`, done => {
-      paginator.once('value', function(snap) {
-        var collection = this.collection;
-        var keys = Object.keys(collection);
-        var i = keys.length;
+      Promise.resolve()
+        .then(() => {
+          if (precursorName) {
+            return paginator[precursorName]();
+          } else {
+            return paginator.once('value');
+          }
+        })
+        .then(snap => {
+          var collection = paginator.collection || {};
+          var keys = Object.keys(collection);
+          var i = keys.length;
 
-        expect(i).toEqual(length);
-        expect(collection[keys[0]]).toEqual(start);
-        expect(collection[keys[i - 1]]).toEqual(end);
-
-        if (typeof cbName == 'string') {
-          paginator[cbName]();
-        }
-        done();
-      });
+          expect(i).toEqual(length);
+          if (length) {
+            expect(collection[keys[0]]).toEqual(start);
+            expect(collection[keys[i - 1]]).toEqual(end);
+          }
+          done();
+        });
     });
   }
 
@@ -121,18 +127,25 @@ describe('Firebase Paginator', () => {
 
     describe('collection', () => {
       describe('pageSize: 10', () => {
-        beforeEach(() => {
+        beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
             finite: true,
             auth: secret,
             pageSize: 10
           });
         });
+        
         testPage(10, 91, 100);
+
+        for (let i = 90; i > 0; i -= 10) {
+          testPage(10, i-9, i, false, 'previous'); 
+        }
+
+        testPage(10, 1, 10, 'should fail to back paginate', 'previous');
       });
 
       describe('pageSize: 3', () => {
-        beforeEach(() => {
+        beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
             finite: true,
             auth: secret,
@@ -140,17 +153,12 @@ describe('Firebase Paginator', () => {
           });
         });
 
-        testPage(3, 98, 100, 'previous');
-        testPage(3, 95, 97, 'previous');
-        testPage(3, 92, 94, 'next');
-        testPage(3, 95, 97, 'next');
-        testPage(3, 98, 100, 'next');
-        testPage(
-          3,
-          98,
-          100,
-          'should fail to forward paginate and stick 98 to 100'
-        );
+        testPage(3, 98, 100, false);
+        testPage(3, 95, 97, false, 'previous');
+        testPage(3, 92, 94, false, 'previous');
+        testPage(3, 95, 97, false, 'next');
+        testPage(3, 98, 100, false, 'next');
+        testPage(3, 98, 100, 'should fail to forward paginate and stick 98 to 100', 'next');
       });
     });
   });

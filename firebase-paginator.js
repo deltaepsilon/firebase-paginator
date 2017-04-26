@@ -1,4 +1,4 @@
-var isWindow = typeof process != 'object';
+var isWindow = typeof global != 'object' || typeof global.process != 'object';
 
 function FirebasePaginator(ref, defaults) {
   var paginator = this;
@@ -198,18 +198,14 @@ function FirebasePaginator(ref, defaults) {
       }
     };
 
-    this.goToPage = function(pageNumber) {
+    this.goToPage = function goToPage(pageNumber) {
       pageNumber = Math.min(this.pageCount, Math.max(1, parseInt(pageNumber)));
-      if (Object.keys(this.pages).length) {
+      if (Object.keys(this.pages || {}).length) {
         // Null check for empty collections
         paginator.page = this.pages[pageNumber];
         paginator.pageNumber = pageNumber;
-        paginator.isLastPage =
-          pageNumber === Object.keys(paginator.pages).length;
-        paginator.ref = ref
-          .orderByKey()
-          .limitToLast(pageSize)
-          .endAt(paginator.page.endKey);
+        paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
+        paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
       } else {
         paginator.ref = ref.orderByKey().limitToLast(pageSize);
       }
@@ -281,23 +277,21 @@ function FirebasePaginator(ref, defaults) {
       });
 
     this.previous = function() {
-      return this.goToPage(
-        Math.min(this.pageCount, this.pageNumber + 1)
-      ).then(function() {
+      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1)).then(function() {
         return fire('previous');
       });
-    };
+    }.bind(paginator);
 
     this.next = function() {
       return this.goToPage(Math.max(1, this.pageNumber - 1)).then(function() {
         return fire('next');
       });
-    };
+    }.bind(paginator);
   }
 }
 
-if (typeof process === 'object') {
-  module.exports = FirebasePaginator;
-} else if (typeof window === 'object') {
+if (isWindow) {
   window.FirebasePaginator = FirebasePaginator;
+} else {
+  module.exports = FirebasePaginator;
 }

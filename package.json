@@ -1,12 +1,12 @@
 {
   "name": "firebase-paginator",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Pagination for Firebase",
   "main": "firebase-paginator.js",
   "scripts": {
-    "test": "node test.js",
-    "jest": "jest",
-    "jest:watch": "jest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "serve": "polymer serve"
   },
   "repository": {
     "type": "git",
