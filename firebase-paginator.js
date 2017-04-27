@@ -290,7 +290,7 @@ function FirebasePaginator(ref, defaults) {
   }
 }
 
-if (isBrowserde) {
+if (isBrowser) {
   window.FirebasePaginator = FirebasePaginator;
 } else {
   module.exports = FirebasePaginator;
