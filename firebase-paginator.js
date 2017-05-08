@@ -181,11 +181,7 @@ function FirebasePaginator(ref, defaults) {
             if (request.readyState === 4) {
               var response = JSON.parse(request.responseText);
               if (request.status === 200) {
-                if (response){
-                  resolve(Object.keys(response));
-                } else {
-                  resolve([]);
-                }
+                resolve(Object.keys(response || {}));
               } else {
                 reject(response);
               }
