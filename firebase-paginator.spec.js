@@ -64,31 +64,7 @@ describe('Firebase Paginator', () => {
   });
 
   let paginator;
-  function testPage(length, start, end, testName, precursorName) {
-    it(testName || `should return records ${start} to ${end}`, done => {
-      Promise.resolve()
-        .then(() => {
-          if (precursorName) {
-            return paginator[precursorName]();
-          } else {
-            return paginator.once('value');
-          }
-        })
-        .then(snap => {
-          var collection = paginator.collection || {};
-          var keys = Object.keys(collection);
-          var i = keys.length;
-
-          expect(i).toEqual(length);
-          if (length) {
-            expect(collection[keys[0]]).toEqual(start);
-            expect(collection[keys[i - 1]]).toEqual(end);
-          }
-          done();
-        });
-    });
-  }
-
+  
   describe('Finite Pagination', () => {
     describe('empty-collection', () => {
       beforeEach(() => {
@@ -160,6 +136,135 @@ describe('Firebase Paginator', () => {
         testPage(3, 98, 100, false, 'next');
         testPage(3, 98, 100, 'should fail to forward paginate and stick 98 to 100', 'next');
       });
+
+      describe('pageSize: 30', () => {
+        beforeAll(() => {
+          paginator = new FirebasePaginator(collectionRef, {
+            finite: true,
+            auth: secret,
+            pageSize: 30
+          });
+        });
+
+        testPage(30, 71, 100, false);
+        testPage(30, 41, 70, false, 'previous');
+        testPage(30, 11, 40, false, 'previous');
+        testPage(10, 1, 10, false, 'previous');
+      });
     });
   });
+
+  describe('Infinite Pagination', () => {
+    describe('empty-collection', () => {
+      beforeEach(() => {
+        paginator = new FirebasePaginator(emptyCollectionRef, {
+          finite: false,
+          auth: secret
+        });
+      });
+
+      testPage(0, undefined, undefined);
+    });
+
+    describe('small-collection', () => {
+      describe('pageSize: 10', () => {
+        beforeEach(() => {
+          paginator = new FirebasePaginator(smallCollectionRef, {
+            finite: false,
+            auth: secret,
+            pageSize: 10
+          });
+        });
+        testPage(3, 1, 3);
+      });
+
+      describe('pageSize: 3', () => {
+        beforeEach(() => {
+          paginator = new FirebasePaginator(smallCollectionRef, {
+            finite: false,
+            auth: secret,
+            pageSize: 3
+          });
+        });
+        testPage(3, 1, 3);
+      });
+    });
+
+    describe('collection', () => {
+      describe('pageSize: 10', () => {
+        beforeAll(() => {
+          paginator = new FirebasePaginator(collectionRef, {
+            finite: false,
+            auth: secret,
+            pageSize: 10
+          });
+        });
+        
+        testPage(10, 91, 100);
+
+        for (let i = 90; i > 0; i -= 10) {
+          testPage(10, i-9, i, false, 'previous'); 
+        }
+
+        testPage(10, 1, 10, 'should fail to back paginate', 'previous');
+      });
+
+      describe('pageSize: 3', () => {
+        beforeAll(() => {
+          paginator = new FirebasePaginator(collectionRef, {
+            finite: true,
+            auth: secret,
+            pageSize: 3
+          });
+        });
+
+        testPage(3, 98, 100, false);
+        testPage(3, 95, 97, false, 'previous');
+        testPage(3, 92, 94, false, 'previous');
+        testPage(3, 95, 97, false, 'next');
+        testPage(3, 98, 100, false, 'next');
+        testPage(3, 98, 100, 'should fail to forward paginate and stick 98 to 100', 'next');
+      });
+      
+      describe('pageSize: 30', () => {
+        beforeAll(() => {
+          paginator = new FirebasePaginator(collectionRef, {
+            finite: true,
+            auth: secret,
+            pageSize: 30
+          });
+        });
+
+        testPage(30, 71, 100, false);
+        testPage(30, 41, 70, false, 'previous');
+        testPage(30, 11, 40, false, 'previous');
+        testPage(10, 1, 10, false, 'previous');
+      });
+    });
+  });
+
+  function testPage(length, start, end, testName, precursorName) {
+    it(testName || `should return records ${start} to ${end}`, done => {
+      Promise.resolve()
+        .then(() => {
+          if (precursorName) {
+            return paginator[precursorName]();
+          } else {
+            return paginator.once('value');
+          }
+        })
+        .then(snap => {
+          var collection = paginator.collection || {};
+          var keys = Object.keys(collection);
+          var i = keys.length;
+
+          expect(i).toEqual(length);
+          if (length) {
+            expect(collection[keys[0]]).toEqual(start);
+            expect(collection[keys[i - 1]]).toEqual(end);
+          }
+          done();
+        });
+    });
+  };
 });
