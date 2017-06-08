@@ -5,6 +5,7 @@ function FirebasePaginator(ref, defaults) {
   var defaults = defaults || {};
   var pageSize = defaults.pageSize ? parseInt(defaults.pageSize, 10) : 10;
   var isFinite = defaults.finite ? defaults.finite : false;
+  var retainLastPage = defaults.retainLastPage || false;
   var auth = defaults.auth;
 
   this.ref = ref;
@@ -118,10 +119,10 @@ function FirebasePaginator(ref, defaults) {
               delete collection[keys[0]];
             }
           } else if (isLastPage && keys.length < pageSize + 1) {
-            console.log('tiny page', keys.length, pageSize);
+            // console.log('tiny page', keys.length, pageSize);
           } else if (isForward) {
             return setPage(); // force a reset if forward pagination overruns the last result
-          } else {
+          } else if (!retainLastPage){
             return setPage(undefined, true, true); // Handle overruns
           }
 

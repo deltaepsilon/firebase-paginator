@@ -34,11 +34,16 @@ Once you have your ```FirebasePaginator``` object, the rest is isomorphic JavaSc
 
 ***auth***: optional auth token for secure collections
 
+***retainLastPage***: applies to infinite pagination only; prevents a short last page from resetting the list; see [Finite vs Infinite Pagination](#finite-vs-infinite-pagination)
+
+
+
 ```
 var options = {
   pageSize: 15,
   finite: true,
-  auth: 'MyAuthTokenForSecurityPurposes'
+  auth: 'MyAuthTokenForSecurityPurposes',
+  retainLastPage: false
 };
 var paginator = new FirebasePaginator(ref, options);
 
@@ -194,6 +199,8 @@ Let's assume that pageSize is 10 and we have records 1 through 100. Also note th
 Infinite pagination pulls the last 11 records of the collection, saves the 90th record's key as a cursor and adds records 91 through 100 to the collection.
 
 Infinite pagination steps backward by pulling another 11 records ending at the cursor (a.k.a. the 90th record's key). So paging back once will display records 81 to 90 with record 80's key as the new cursor. Page back again and you're at records 71 to 80 and so forth.
+
+By default, inifinite pagination resets its last page if you overrun the beginning of a list. For example, if you had 100 items and a ```pageSize``` of 30, paging backwards would return records 71-100, 41-70, 11-40 and 1-30. Notice that the last page is still 30 records. The default behavior is to reset the collection to the beginning of the list and return a full page if possible. The set ```retainLastPage: true``` in your options to return records 1-10 instead.
 
 Pros:
 

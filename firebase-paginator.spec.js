@@ -15,6 +15,8 @@ const emptyCollectionRef = ref.child('empty-collection');
 const FirebasePaginator = require('./firebase-paginator');
 
 describe('Firebase Paginator', () => {
+  let paginator;
+
   beforeAll(done => {
     ref.remove().then(done);
   });
@@ -62,8 +64,6 @@ describe('Firebase Paginator', () => {
       });
     });
   });
-
-  let paginator;
   
   describe('Finite Pagination', () => {
     describe('empty-collection', () => {
@@ -212,7 +212,7 @@ describe('Firebase Paginator', () => {
       describe('pageSize: 3', () => {
         beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
-            finite: true,
+            finite: false,
             auth: secret,
             pageSize: 3
           });
@@ -229,9 +229,25 @@ describe('Firebase Paginator', () => {
       describe('pageSize: 30', () => {
         beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
-            finite: true,
+            finite: false,
             auth: secret,
             pageSize: 30
+          });
+        });
+
+        testPage(30, 71, 100, false);
+        testPage(30, 41, 70, false, 'previous');
+        testPage(30, 11, 40, false, 'previous');
+        testPage(30, 1, 30, false, 'previous');
+      });
+      
+      describe('pageSize: 30', () => {
+        beforeAll(() => {
+          paginator = new FirebasePaginator(collectionRef, {
+            finite: false,
+            auth: secret,
+            pageSize: 30,
+            retainLastPage: true
           });
         });
 
@@ -258,6 +274,7 @@ describe('Firebase Paginator', () => {
           var keys = Object.keys(collection);
           var i = keys.length;
 
+          // console.log('output', length, collection);
           expect(i).toEqual(length);
           if (length) {
             expect(collection[keys[0]]).toEqual(start);
