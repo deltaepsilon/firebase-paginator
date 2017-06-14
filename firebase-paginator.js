@@ -124,6 +124,8 @@ function FirebasePaginator(ref, defaults) {
             return setPage(); // force a reset if forward pagination overruns the last result
           } else if (!retainLastPage){
             return setPage(undefined, true, true); // Handle overruns
+          } else {
+            isLastPage = true;
           }
 
           this.snap = snap;

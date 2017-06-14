@@ -255,6 +255,19 @@ describe('Firebase Paginator', () => {
         testPage(30, 41, 70, false, 'previous');
         testPage(30, 11, 40, false, 'previous');
         testPage(10, 1, 10, false, 'previous');
+
+        it('should fire isLastPage even if retainLastValue is true', done => {
+          let firedCount = 0;
+          paginator.once('isLastPage').then(() => {
+            firedCount++;
+          });
+          paginator.previous()
+            .then(() => {
+              expect(firedCount).toEqual(1);
+              done();
+            })
+            .catch(done.fail);
+        });
       });
     });
   });
