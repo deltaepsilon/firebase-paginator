@@ -34,7 +34,7 @@ function FirebasePaginator(ref, defaults) {
   this.on = function(eventName, callback) {
     if (!events[eventName]) {
       events[eventName] = {
-        queue: []
+        queue: [],
       };
     }
     events[eventName].queue.push(callback);
@@ -122,7 +122,7 @@ function FirebasePaginator(ref, defaults) {
             // console.log('tiny page', keys.length, pageSize);
           } else if (isForward) {
             return setPage(); // force a reset if forward pagination overruns the last result
-          } else if (!retainLastPage){
+          } else if (!retainLastPage) {
             return setPage(undefined, true, true); // Handle overruns
           } else {
             isLastPage = true;
@@ -208,7 +208,10 @@ function FirebasePaginator(ref, defaults) {
         paginator.page = this.pages[pageNumber];
         paginator.pageNumber = pageNumber;
         paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
-        paginator.ref = ref.orderByKey().limitToLast(pageSize).endAt(paginator.page.endKey);
+        paginator.ref = ref
+          .orderByKey()
+          .limitToLast(pageSize)
+          .endAt(paginator.page.endKey);
       } else {
         paginator.ref = ref.orderByKey().limitToLast(pageSize);
       }
@@ -244,13 +247,13 @@ function FirebasePaginator(ref, defaults) {
             cursors.push({
               fromStart: {
                 startRecord: i - pageSize + 1,
-                endRecord: i
+                endRecord: i,
               },
               fromEnd: {
                 startRecord: keysLength - i + 1,
-                endRecord: keysLength - i + pageSize
+                endRecord: keysLength - i + pageSize,
               },
-              endKey: keys[i - 1]
+              endKey: keys[i - 1],
             });
           }
 
@@ -293,8 +296,10 @@ function FirebasePaginator(ref, defaults) {
   }
 }
 
-if (isBrowser) {
+if (typeof window == 'object') {
   window.FirebasePaginator = FirebasePaginator;
-} else {
+}
+
+if (typeof module == 'object') {
   module.exports = FirebasePaginator;
 }

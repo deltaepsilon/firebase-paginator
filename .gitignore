@@ -42,3 +42,5 @@ env.json
 
 .yo-rc.json
 bower_components
+dist
+.cache

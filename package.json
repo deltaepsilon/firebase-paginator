@@ -2,20 +2,19 @@
   "name": "firebase-paginator",
   "version": "1.1.1",
   "description": "Pagination for Firebase",
-  "main": "firebase-paginator.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "serve": "polymer serve"
+    "start": "npm run serve",
+    "serve": "polymer serve -p 8080",
+    "bundle": "parcel es-module.html"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/deltaepsilon/firebase-paginator.git"
   },
-  "keywords": [
-    "firebase",
-    "pagination"
-  ],
+  "keywords": ["firebase", "pagination"],
   "author": "Chris Esplin <chris@quiver.is>",
   "license": "MIT",
   "bugs": {
@@ -30,6 +29,7 @@
     "firebase": "^3.2.1",
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
+    "polymer-cli": "^1.6.0",
     "tape": "^4.6.0"
   }
 }
