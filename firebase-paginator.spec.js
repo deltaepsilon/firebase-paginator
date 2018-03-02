@@ -64,7 +64,7 @@ describe('Firebase Paginator', () => {
       });
     });
   });
-  
+
   describe('Finite Pagination', () => {
     describe('empty-collection', () => {
       beforeEach(() => {
@@ -110,11 +110,11 @@ describe('Firebase Paginator', () => {
             pageSize: 10
           });
         });
-        
+
         testPage(10, 91, 100);
 
         for (let i = 90; i > 0; i -= 10) {
-          testPage(10, i-9, i, false, 'previous'); 
+          testPage(10, i - 9, i, false, 'previous');
         }
 
         testPage(10, 1, 10, 'should fail to back paginate', 'previous');
@@ -134,7 +134,13 @@ describe('Firebase Paginator', () => {
         testPage(3, 92, 94, false, 'previous');
         testPage(3, 95, 97, false, 'next');
         testPage(3, 98, 100, false, 'next');
-        testPage(3, 98, 100, 'should fail to forward paginate and stick 98 to 100', 'next');
+        testPage(
+          3,
+          98,
+          100,
+          'should fail to forward paginate and stick 98 to 100',
+          'next'
+        );
       });
 
       describe('pageSize: 30', () => {
@@ -199,11 +205,11 @@ describe('Firebase Paginator', () => {
             pageSize: 10
           });
         });
-        
+
         testPage(10, 91, 100);
 
         for (let i = 90; i > 0; i -= 10) {
-          testPage(10, i-9, i, false, 'previous'); 
+          testPage(10, i - 9, i, false, 'previous');
         }
 
         testPage(10, 1, 10, 'should fail to back paginate', 'previous');
@@ -223,9 +229,15 @@ describe('Firebase Paginator', () => {
         testPage(3, 92, 94, false, 'previous');
         testPage(3, 95, 97, false, 'next');
         testPage(3, 98, 100, false, 'next');
-        testPage(3, 98, 100, 'should fail to forward paginate and stick 98 to 100', 'next');
+        testPage(
+          3,
+          98,
+          100,
+          'should fail to forward paginate and stick 98 to 100',
+          'next'
+        );
       });
-      
+
       describe('pageSize: 30', () => {
         beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
@@ -240,7 +252,7 @@ describe('Firebase Paginator', () => {
         testPage(30, 11, 40, false, 'previous');
         testPage(30, 1, 30, false, 'previous');
       });
-      
+
       describe('pageSize: 30', () => {
         beforeAll(() => {
           paginator = new FirebasePaginator(collectionRef, {
@@ -261,7 +273,8 @@ describe('Firebase Paginator', () => {
           paginator.once('isLastPage').then(() => {
             firedCount++;
           });
-          paginator.previous()
+          paginator
+            .previous()
             .then(() => {
               expect(firedCount).toEqual(1);
               done();
@@ -296,5 +309,5 @@ describe('Firebase Paginator', () => {
           done();
         });
     });
-  };
+  }
 });
