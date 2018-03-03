@@ -14,7 +14,10 @@
     "type": "git",
     "url": "https://github.com/deltaepsilon/firebase-paginator.git"
   },
-  "keywords": ["firebase", "pagination"],
+  "keywords": [
+    "firebase",
+    "pagination"
+  ],
   "author": "Chris Esplin <chris@quiver.is>",
   "license": "MIT",
   "bugs": {

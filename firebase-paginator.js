@@ -34,7 +34,7 @@ function FirebasePaginator(ref, defaults) {
   this.on = function(eventName, callback) {
     if (!events[eventName]) {
       events[eventName] = {
-        queue: [],
+        queue: []
       };
     }
     events[eventName].queue.push(callback);
@@ -207,7 +207,8 @@ function FirebasePaginator(ref, defaults) {
         // Null check for empty collections
         paginator.page = this.pages[pageNumber];
         paginator.pageNumber = pageNumber;
-        paginator.isLastPage = pageNumber === Object.keys(paginator.pages).length;
+        paginator.isLastPage =
+          pageNumber === Object.keys(paginator.pages).length;
         paginator.ref = ref
           .orderByKey()
           .limitToLast(pageSize)
@@ -247,13 +248,13 @@ function FirebasePaginator(ref, defaults) {
             cursors.push({
               fromStart: {
                 startRecord: i - pageSize + 1,
-                endRecord: i,
+                endRecord: i
               },
               fromEnd: {
                 startRecord: keysLength - i + 1,
-                endRecord: keysLength - i + pageSize,
+                endRecord: keysLength - i + pageSize
               },
-              endKey: keys[i - 1],
+              endKey: keys[i - 1]
             });
           }
 
@@ -283,9 +284,11 @@ function FirebasePaginator(ref, defaults) {
       });
 
     this.previous = function() {
-      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1)).then(function() {
-        return fire('previous');
-      });
+      return this.goToPage(Math.min(this.pageCount, this.pageNumber + 1)).then(
+        function() {
+          return fire('previous');
+        }
+      );
     }.bind(paginator);
 
     this.next = function() {
